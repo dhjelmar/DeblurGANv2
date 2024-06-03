@@ -1,3 +1,6 @@
+#!/c/Users/dlhje/anaconda3/envs/py39/python
+
+#%%
 import os
 from glob import glob
 from typing import Optional
@@ -13,12 +16,19 @@ from aug import get_normalize
 from models.networks import get_generator
 
 
+#%%
+# Specify whether device has cpu or gpu
+# unfortunately, cuda requires gpu so changed the specification
+#device=torch.device('cpu')
+device=torch.device('gpu')
+
+#%%
 class Predictor:
     def __init__(self, weights_path: str, model_name: str = ''):
         with open('config/config.yaml',encoding='utf-8') as cfg:
             config = yaml.load(cfg, Loader=yaml.FullLoader)
         model = get_generator(model_name or config['model'])
-        model.load_state_dict(torch.load(weights_path)['model'])
+        model.load_state_dict(torch.load(weights_path, map_location=device)['model'])
         self.model = model.cuda()
         self.model.train(True)
         # GAN inference should be in train mode to use actual stats in norm layers,
@@ -132,11 +142,12 @@ def get_files():
 
 
 
-
+#%%
 if __name__ == '__main__':
   #  Fire(main)
 #增加批量处理图片：
     img_path=get_files()
+    # img_path="blurred-image.jpeg"
     for i in img_path:
         main(i)
     # main('test_img/tt.mp4')
